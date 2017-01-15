@@ -19,32 +19,40 @@ def run(input, output):
   vertices =[] 
   cells = []
 
+  index_vertices = 0
+  index_cells = 0
   while 1:
     line = ifile.readline()
-    if line.startswith("BEGIN NODES"): 
-      state = 1  
-    elif line.startswith("END NODES"): 
+    if line.startswith("@1"): 
+      state = 1
+    elif line.startswith("\n"): 
       state = 0  
-    elif line.startswith("BEGIN COMPONENTS"): 
+    elif line.startswith("@2"): 
       state = 2  
-    elif line.startswith("END COMPONENTS"): 
+    elif line.startswith("@3"):
+      state = 3
       break
+    
     elif state == 1:   
     # example: 
-    #*node(1,-37.168381,50.233715,-12.345407,0,0,0,0,0)
-      m = re.match(r"^\*node\((.*)\)$", line)
-      if m: 
-        index, x, y, z, n1, n2, n3, n4, n5  = m.group(1).split(",") 
-        vertices.append((index,x,y,z))
+    #-37.168381 50.233715 -12.345407
+      # print line.strip().split()
+      index_vertices += 1
+      print state
+      
+      x, y, z = line.strip().split() 
+      vertices.append((index_vertices,x,y,z))
 
     elif state == 2:   
     # example: 
 #    *tetra4(1,1,38366,38367,9253,43441)
-      m = re.match(r"^\*tetra4\((.*)\)$", line)
-      if m: 
-        index, n1, v1, v2, v3, v4  = m.group(1).split(",") 
-        cells.append((index, v1, v2, v3, v4))
-     
+      print state
+
+      index_cells += 1
+      v1, v2, v3, v4= line.strip().split() 
+      cells.append((index_cells,v1,v2,v3,v4))
+
+  print "out of loop"
   xml_writer.write_header_mesh(ofile, "tetrahedron", 3) 
 
   xml_writer.write_header_vertices(ofile, len(vertices))
