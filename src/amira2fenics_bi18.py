@@ -1,4 +1,3 @@
-
 import sys
 
 from dolfin_utils.meshconvert import xml_writer 
@@ -81,15 +80,14 @@ def run(input):
   header = ("""<?xml version="1.0"?>
 <dolfin xmlns:dolfin="http://fenicsproject.org">
   <mesh_function>
-    <mesh_value_collection name="" type="uint" dim=\"%d" size=\"%d">\n""") % (2, len(cells))
+    <mesh_value_collection name="f" type="uint" dim=\"%d" size=\"%d">\n""") % (3, len(cells))
   
   ofile_sub.write(header)
   
   counter=0
   for c in cells: 
     if not counter == int(c[0])-1: print "Warning! Numbering assumption invalidated", counter, c[0]
-    xml_writer.write_entity_meshvaluecollection(ofile_sub, 1, int(c[0])-1, int(labels[counter]), local_entity=2) 
-
+    xml_writer.write_entity_meshvaluecollection(ofile_sub, 1, int(c[0])-1, int(labels[counter]), local_entity=0) 
     counter += 1
     
   xml_writer.write_footer_meshvaluecollection(ofile_sub)
