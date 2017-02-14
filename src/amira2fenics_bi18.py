@@ -41,7 +41,7 @@ def run(input):
     #-37.168381 50.233715 -12.345407
       # print line.strip().split()
       index_vertices += 1
-      x, y, z = line.strip().split() 
+      x, y, z = line.strip().split().split()
       vertices.append((index_vertices,x,y,z))
 
     elif state == 2:   
