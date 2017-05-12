@@ -1,6 +1,6 @@
 import scipy.io
 from dolfin import *
-from numpy import savetxt
+import numpy as np
 
 def create_submesh_markers(markers, submesh):
 
@@ -43,17 +43,24 @@ def split_meshes():
     #plot(markers, title="Cell markers")
 
     # Create mesh of the white and gray matter
-    RGM = 22 # In Collins = 3
+    RGM = 22 
     LGM = 23
     RWM = 9
-    LWM = 10 # In Collins = 4
+    LWM = 10 
     tissue = CellFunction("size_t", mesh, 0)
     tissue.array()[markers.array()==RGM] = 1
     tissue.array()[markers.array()==LGM] = 1
     tissue.array()[markers.array()==RWM] = 1
     tissue.array()[markers.array()==LWM] = 1
+    np.savetxt("index_wg.out", np.where(tissue.array()==1)[0])
+    #print np.where(tissue.array()==1)
+    # for cell in cells(mesh):
+    #     print cell.index()
+    #     print markers.array()
+
     whitegray = SubMesh(mesh, tissue, 1)
 
+    
     
     #white = SubMesh(mesh, markers, WHITE)
     #gray = SubMesh(mesh, markers, GRAY)
