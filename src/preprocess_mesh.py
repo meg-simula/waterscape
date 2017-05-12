@@ -52,7 +52,7 @@ def split_meshes():
     tissue.array()[markers.array()==LGM] = 1
     tissue.array()[markers.array()==RWM] = 1
     tissue.array()[markers.array()==LWM] = 1
-    np.savetxt("index_wg.out", np.where(tissue.array()==1)[0])
+    np.savetxt("index_wg.out", np.where(tissue.array()==1)[0], )
     #print np.where(tissue.array()==1)
     # for cell in cells(mesh):
     #     print cell.index()
