@@ -2,7 +2,7 @@ import scipy.io
 from dolfin import *
 import numpy as np
 
-def create_submesh_markers(markers, submesh):
+def create_submesh_markers(markers, submesh, name):
 
     # creates the submesh markers
     submesh_markers = MeshFunction("size_t", submesh, markers.dim())
@@ -29,10 +29,12 @@ def create_submesh_markers(markers, submesh):
         #        # vertices
         #        vert = Facet(mesh, facet).entities(0)
         #        # intersection
-        #        common = set(vert).intersection(set(vert_mapped))
+        #        common = set(vert).intersection(snp.savetxt('test.out', x, fmt='%1.4e')et(vert_mapped))
         #        if len(common) == 3 :
         #            markers_submesh.array()[facet_sub] = markers.array()[facet]
         #            break
+    np.save(name + "_cellmap", cell_map)
+
 
     return submesh_markers
 
@@ -52,31 +54,45 @@ def split_meshes():
     tissue.array()[markers.array()==LGM] = 1
     tissue.array()[markers.array()==RWM] = 1
     tissue.array()[markers.array()==LWM] = 1
-    np.savetxt("index_wg.out", np.where(tissue.array()==1)[0], )
-    #print np.where(tissue.array()==1)
-    # for cell in cells(mesh):
-    #     print cell.index()
-    #     print markers.array()
-
     whitegray = SubMesh(mesh, tissue, 1)
 
-    
+    whitetissue = CellFunction("size_t", mesh, 0)
+    whitetissue.array()[markers.array()==RWM] = 1
+    whitetissue.array()[markers.array()==LWM] = 1    
+
+    white = SubMesh(mesh, whitetissue, 1)
+  
+    graytissue = CellFunction("size_t", mesh, 0)
+    graytissue.array()[markers.array()==LGM] = 1
+    graytissue.array()[markers.array()==RGM] = 1     
+
+    gray = SubMesh(mesh, graytissue, 1)
     
     #white = SubMesh(mesh, markers, WHITE)
     #gray = SubMesh(mesh, markers, GRAY)
 
     # Map supermesh markers to submesh
-    whitegray_markers = create_submesh_markers(markers, whitegray)
+    whitegray_markers = create_submesh_markers(markers, whitegray, "whitegray")
+    white_markers = create_submesh_markers(markers, white, "white")
+    gray_markers = create_submesh_markers(markers, gray, "gray")
 
     # Store submesh
     file = File("bi18_whitegray_mesh.xml.gz")
     file << whitegray
+    file = File("bi18_white_mesh.xml.gz")
+    file << white
+    file = File("bi18_gray_mesh.xml.gz")
+    file << gray
     #file = File("adult_mni_152_model_whitegray_mesh.xdmf")
     #file << whitegray
 
     # Store submarkers
-    file = File("adult_mni_152_model_whitegray_markers.xml.gz")
+    file = File("bi18_whitegray_markers.xml.gz")
     file << whitegray_markers
+    file = File("bi18_white_markers.xml.gz")
+    file << white_markers
+    file = File("bi18_gray_markers.xml.gz")
+    file << gray_markers
     #file = File("adult_mni_152_model_whitegray_markers.xdmf")
     #ile << whitegray_markers
 
@@ -85,7 +101,29 @@ def split_meshes():
     #plot(whitegray, title="Mesh")
     #plot(whitegray_markers, title="Gray and white matter")
     #interactive()
+def write_fibers():
+    mesh = Mesh("bi18_whitegray_mesh.xml.gz")
+    DG = VectorFunctionSpace(mesh, "DG", 0)
+    fibers = Function(DG)
+    cellmap = np.load("whitegray_cellmap.npy")
+    lwt = np.loadtxt("bi18_labels7_all_fit_lwm_tetra.info")
+    rwt = np.loadtxt("bi18_labels7_all_fit_rwm_tetra.info")
+    lgt = np.loadtxt("bi18_labels7_all_fit_lgm_tetra.info")
+    rgt = np.loadtxt("bi18_labels7_all_fit_rgm_tetra.info")
 
+    rwe = open("bi18_rwm_eigvect_230000.asc", "r")
+    lwe = open("bi18_lwm_eigvect_230000.asc", "r")
+    lge = open("bi18_rgm_eigvect_230000.asc", "r")
+    rge = open("bi18_rwm_eigvect_230000.asc", "r") 
+    
+    lw_eigvect = [[line.strip().split(" ")[:3] for line in lwe.readlines()[:]]]
+    print lw_eigvect
+
+    #for i in range(len(lwt)):
+    #    fibers.vector()[in(lwt[i]-1)][0] = 
+        
+    #for cell in cells(mesh)
+    
 def convert_mat_to_xml(prefix, gdim=3, celltype="tetrahedron"):
 
     # Load matlab data from Colin27 or Adult MNI mesh
@@ -191,3 +229,4 @@ if __name__ == "__main__":
         interactive()
 
     split_meshes()
+    write_fibers()
